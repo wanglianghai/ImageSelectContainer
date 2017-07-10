@@ -12,6 +12,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
+import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 
 import java.io.File;
@@ -51,6 +52,7 @@ public class ImageSelectActivity extends AppCompatActivity {
 
     private void setData() {
         mRecyclerView.setAdapter(new MyAdapter(this, mImages));
+        mRecyclerView.addItemDecoration(new SpaceItemDecoration(50));
     }
 
     private void getImageList() {
