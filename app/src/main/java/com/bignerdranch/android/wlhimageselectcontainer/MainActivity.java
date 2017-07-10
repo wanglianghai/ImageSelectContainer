@@ -1,5 +1,6 @@
 package com.bignerdranch.android.wlhimageselectcontainer;
 
+import android.Manifest;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +14,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        MPermissionUtils.requestPermissionsResult(MainActivity.this, 1,
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE});
 
         mSelectButton = (Button) findViewById(R.id.select_picture);
         mSelectButton.setOnClickListener(new View.OnClickListener() {
