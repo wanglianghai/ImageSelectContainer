@@ -3,14 +3,16 @@ package com.bignerdranch.android.wlhimageselectcontainer;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
-import com.bignerdranch.android.wlhimageselectcontainer.Bean.ImageBean;
+import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
+import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,11 +20,23 @@ import java.util.List;
 
 public class ImageSelectActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
+    private MyThread mThread;
 
     /**
      * 所有的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
+
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            //绑定数据
+            setData();
+            if (mThread != null && !mThread.isInterrupted()) {
+                mThread.interrupt();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +49,17 @@ public class ImageSelectActivity extends AppCompatActivity {
         getImageList();
     }
 
+    private void setData() {
+        mRecyclerView.setAdapter(new MyAdapter(this, mImages));
+    }
+
     private void getImageList() {
-        new MyThread().start();
+        mThread = new MyThread();
+        mThread.start();
     }
 
     //异步线程下载图片
-    class MyThread extends Thread{
-        private static final String TAG = "MyThread";
+    private class MyThread extends Thread{
         @Override
         public void run() {
             super.run();
@@ -66,21 +84,21 @@ public class ImageSelectActivity extends AppCompatActivity {
                     // 获取图片的路径
                     String path = mCursor.getString(mCursor
                             .getColumnIndex(MediaStore.Images.Media.DATA));
-                    Log.i(TAG, "run: path:" + path);
-                    //抽象路径： 路径转换为分隔符
                     File parentFile = new File(path).getParentFile();
                     if (parentFile == null) {
                         continue;
                     }
-                    Log.i(TAG, "run: parentFile:" + parentFile);
                     //获取到文件地址
                     String dirPath = parentFile.getAbsolutePath();
-                    Log.i(TAG, "run: dirPath:" + dirPath);
+
                     ImageBean imageBean = new ImageBean();
                     imageBean.setPath(path);
-                    Log.i(TAG, "run: ");
+                    mImages.add(imageBean);
+
                 }
             }
+
+            mHandler.sendEmptyMessage(0x110);
         }
     }
 }
