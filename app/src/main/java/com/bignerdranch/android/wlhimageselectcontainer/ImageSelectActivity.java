@@ -52,7 +52,7 @@ public class ImageSelectActivity extends AppCompatActivity {
 
     private void setData() {
         mRecyclerView.setAdapter(new MyAdapter(this, mImages));
-        mRecyclerView.addItemDecoration(new SpaceItemDecoration(50));
+        mRecyclerView.addItemDecoration(new SpaceItemDecoration(5));
     }
 
     private void getImageList() {
