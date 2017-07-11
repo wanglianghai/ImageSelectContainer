@@ -1,18 +1,22 @@
 package com.bignerdranch.android.wlhimageselectcontainer.adapter;
 
 import android.content.Context;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.bignerdranch.android.wlhimageselectcontainer.R;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
+import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -25,12 +29,15 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
     private List<ImageBean> mImageBeen;
     private float mScreenWith;
+    private OnChangeListener mOnChangeListener;
+    private boolean mNotifyData = false;
     private int CAMERA_TYPE = 0;
     private int LAYOUT_TYPE = 1;
 
-    public MyAdapter(Context context, List<ImageBean> imageBeen) {
+    public MyAdapter(Context context, List<ImageBean> imageBeen, OnChangeListener onChangeListener) {
         mContext = context;
         mImageBeen = imageBeen;
+        mOnChangeListener = onChangeListener;
 
         //context通过获取屏幕宽度
         //1.得到窗口的管理对象
@@ -57,14 +64,27 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return new CameraHolder(view);
         } else {
             View view = LayoutInflater.from(mContext).inflate(R.layout.image_select_item, parent, false);
-            return new MyHolder(view);
+            return new MyHolder(view, mOnChangeListener);
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        MyHolder myHolder = (MyHolder) holder;
         if (getItemViewType(position) == LAYOUT_TYPE) {
-           Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(((MyHolder) holder).mImageView);
+           Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(myHolder.mImageView);
+        }
+
+        if (mImageBeen.get(position).isSelect()) {
+            myHolder.mCheckBox.setSelected(true);
+            myHolder.canSelect();
+        } else {
+            myHolder.mCheckBox.setSelected(false);
+            if (mNotifyData) {
+                myHolder.cannotSelect();
+            } else {
+                myHolder.canSelect();
+            }
         }
     }
 
@@ -73,12 +93,33 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return mImageBeen.size();
     }
 
+    public void notifyData(boolean notifyData) {
+        mNotifyData = notifyData;
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
+    }
+
     private class MyHolder extends RecyclerView.ViewHolder{
         private ImageView mImageView;
+        private CheckBox mCheckBox;
+//        private OnChangeListener mOnChangeListener;
 
-        private MyHolder(View itemView) {
+        private MyHolder(View itemView, OnChangeListener onChangeListener) {
             super(itemView);
+//            mOnChangeListener = onChangeListener;
             mImageView = (ImageView) itemView.findViewById(R.id.item_image);
+            mCheckBox = (CheckBox) itemView.findViewById(R.id.item_check_box);
+//            mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//                @Override
+//                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                    onChangeListener
+//                }
+//            });
             //适配imageView，正方形，宽和高都是屏幕宽度的1/3
             //1.得到所在视图层的参数
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mImageView.getLayoutParams();
@@ -88,6 +129,18 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             //3.用视图层的子组件设置参数
             mImageView.setLayoutParams(params);
         }
+
+
+
+        public void canSelect() {
+            mImageView.setAlpha(1.0f);
+            mCheckBox.setEnabled(true);
+        }
+
+        public void cannotSelect() {
+            mImageView.setAlpha(0.3f);
+            mCheckBox.setEnabled(false);
+        }
     }
 
     private class CameraHolder extends RecyclerView.ViewHolder {
@@ -95,10 +148,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public CameraHolder(View itemView) {
             super(itemView);
             ImageView imageView = (ImageView) itemView.findViewById(R.id.image_item);
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) imageView.getLayoutParams();
+            ViewGroup.LayoutParams params =  imageView.getLayoutParams();
             params.width = (int) (mScreenWith / 3);
             params.height = (int) (mScreenWith / 3);
             imageView.setLayoutParams(params);
+
         }
     }
 }

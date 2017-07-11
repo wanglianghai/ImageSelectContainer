@@ -14,28 +14,41 @@ import android.support.v7.widget.RecyclerView;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
+import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSelectActivity extends AppCompatActivity {
+public class ImageSelectActivity extends AppCompatActivity implements OnChangeListener {
     private RecyclerView mRecyclerView;
     private MyThread mThread;
+    private MyAdapter mMyAdapter;
 
     /**
      * 所有的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
 
+    /**
+     * 最大的图片数
+     */
+    private final int MAX_IMAGES = 9;
+    private int imageNum = 9;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(android.os.Message msg) {
-            //绑定数据
-            setData();
-            if (mThread != null && !mThread.isInterrupted()) {
-                mThread.interrupt();
+            switch (msg.what){
+                case 1:
+                    //绑定数据
+                    setData();
+                    if (mThread != null && !mThread.isInterrupted()) {
+                        mThread.interrupt();
+                    }
+                    break;
             }
+
         }
     };
 
@@ -51,13 +64,32 @@ public class ImageSelectActivity extends AppCompatActivity {
     }
 
     private void setData() {
-        mRecyclerView.setAdapter(new MyAdapter(this, mImages));
+        mMyAdapter = new MyAdapter(this, mImages, this);
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(5));
+        mRecyclerView.setAdapter(mMyAdapter);
+
     }
 
     private void getImageList() {
         mThread = new MyThread();
         mThread.start();
+    }
+
+    @Override
+    public void onChangeListener(int position, boolean isCheck) {
+        if (isCheck) {
+            mImages.get(position).setSelect(true);
+            imageNum++;
+            if (imageNum == MAX_IMAGES) {
+                mMyAdapter.notifyData(true);
+            }
+        } else {
+            mImages.get(position).setSelect(false);
+            imageNum--;
+            if (imageNum == MAX_IMAGES - 1) {
+                mMyAdapter.notifyData(false);
+            }
+        }
     }
 
     //异步线程下载图片
@@ -100,7 +132,7 @@ public class ImageSelectActivity extends AppCompatActivity {
                 }
             }
 
-            mHandler.sendEmptyMessage(0x110);
+            mHandler.sendEmptyMessage(1);
         }
     }
 }
