@@ -14,12 +14,13 @@ import android.support.v7.widget.RecyclerView;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
+import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSelectActivity extends AppCompatActivity {
+public class ImageSelectActivity extends AppCompatActivity implements OnChangeListener {
     private RecyclerView mRecyclerView;
     private MyThread mThread;
 
@@ -51,13 +52,18 @@ public class ImageSelectActivity extends AppCompatActivity {
     }
 
     private void setData() {
-        mRecyclerView.setAdapter(new MyAdapter(this, mImages));
+        mRecyclerView.setAdapter(new MyAdapter(this, mImages, this));
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(5));
     }
 
     private void getImageList() {
         mThread = new MyThread();
         mThread.start();
+    }
+
+    @Override
+    public void onChangeListener(int position, boolean isCheck) {
+
     }
 
     //异步线程下载图片
