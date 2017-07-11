@@ -1,6 +1,8 @@
 package com.bignerdranch.android.wlhimageselectcontainer;
 
+import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
@@ -11,6 +13,8 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
@@ -23,6 +27,9 @@ import java.util.List;
 
 public class ImageSelectActivity extends AppCompatActivity implements OnChangeListener {
     private static final String TAG = "ImageSelectActivity";
+
+    private Button mButtonConfirm;
+
     private RecyclerView mRecyclerView;
     private MyThread mThread;
     private MyAdapter adapter;
@@ -31,7 +38,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
      * 所有的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
-    private List<ImageBean> mSelectImages = new ArrayList<>();
+    private ArrayList<ImageBean> mSelectImages = new ArrayList<>();
 
     private final int MAX_IMAGE = 5;
 
@@ -53,6 +60,21 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+
+        mButtonConfirm = (Button) findViewById(R.id.button_confirm);
+        mButtonConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //一个新的intent
+                Intent intent = new Intent();
+                //intent中放入数据
+                intent.putParcelableArrayListExtra("selectImages", mSelectImages);
+                //设置返回结果
+                setResult(Activity.RESULT_OK, intent);
+                //activity结束
+                finish();
+            }
+        });
 
         getImageList();
     }
@@ -86,6 +108,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
             if (mSelectImages.contains(image)) {
                 mSelectImages.remove(image);
                 image.setSelect(false);
+                //必须放里面不然会一直调用浪费资源
                 if (mSelectImages.size() == MAX_IMAGE - 1) {
                     adapter.notifyData(false);
                 }

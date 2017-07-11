@@ -101,14 +101,17 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     //接受传入的值
-    //notifyDataSetChanged();耗时会崩app直接在主线程
+    //notifyDataSetChanged();耗时会崩app
     public void  notifyData(boolean notifyChange) {
         this.notifyChange = notifyChange;
+        Log.i(TAG, "run: out" + Thread.currentThread().getName());
+        //还是在主线程运行,但是放消息对列中，能尝试什么时候可以运行不崩
         Handler handler = new Handler();
         handler.post(new Runnable() {
             @Override
             public void run() {
                 notifyDataSetChanged();
+                Log.i(TAG, "run: runable" + Thread.currentThread().getName());
             }
         });
         Log.i(TAG, "notifyData: " + this.notifyChange);
