@@ -77,7 +77,6 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         //MyHolder itemView = (MyHolder) holder;
         if (getItemViewType(position) == LAYOUT_TYPE) {
             MyHolder itemView = (MyHolder) holder;
-        //    itemView.mCheckBox.setVisibility(View.VISIBLE);
             Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(itemView.mImageView);
 
             if (mImageBeen.get(position).isSelect()) {
@@ -143,12 +142,15 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             mOnChangeListener.onChangeListener(getAdapterPosition(), isChecked);
         }
 
+        //check box 对应click able
         public void canSelect() {
+            mCheckBox.setVisibility(View.VISIBLE);
             mImageView.setAlpha(1.0f);
             mCheckBox.setClickable(true);
         }
 
         public void cannotSelect() {
+            mCheckBox.setVisibility(View.GONE);
             mImageView.setAlpha(0.3f);
             mCheckBox.setClickable(false);
         }

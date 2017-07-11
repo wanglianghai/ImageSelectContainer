@@ -40,7 +40,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
     private List<ImageBean> mImages = new ArrayList<>();
     private ArrayList<ImageBean> mSelectImages = new ArrayList<>();
 
-    private final int MAX_IMAGE = 5;
+    private final int MAX_IMAGE = 9;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -62,6 +62,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
         mButtonConfirm = (Button) findViewById(R.id.button_confirm);
+        mButtonConfirm.setText("确定" + "0/" + MAX_IMAGE);
         mButtonConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,6 +100,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
             if (!mSelectImages.contains(image)) {
                 image.setSelect(true);
                 mSelectImages.add(image);
+                mButtonConfirm.setText("确定" + mSelectImages.size() + "/" + MAX_IMAGE);
                 //必须放里面不然会一直调用
                 if (mSelectImages.size() == MAX_IMAGE) {
                     adapter.notifyData(true);
@@ -107,6 +109,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
         } else {
             if (mSelectImages.contains(image)) {
                 mSelectImages.remove(image);
+                mButtonConfirm.setText("确定" + mSelectImages.size() + "/" + MAX_IMAGE);
                 image.setSelect(false);
                 //必须放里面不然会一直调用浪费资源
                 if (mSelectImages.size() == MAX_IMAGE - 1) {
