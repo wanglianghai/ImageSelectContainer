@@ -79,7 +79,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             MyHolder itemView = (MyHolder) holder;
         //    itemView.mCheckBox.setVisibility(View.VISIBLE);
             Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(itemView.mImageView);
-            Log.i(TAG, "onBindViewHolder: " + mImageBeen.get(position).toString());
+
             if (mImageBeen.get(position).isSelect()) {
                 itemView.mCheckBox.setChecked(true);
                 itemView.canSelect();
@@ -89,7 +89,8 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 } else {
                     itemView.canSelect();
                 }
-                itemView.mCheckBox.setSelected(false);
+                //check box 用checked，视图回收重用
+                itemView.mCheckBox.setChecked(false);
             }
         }
     }

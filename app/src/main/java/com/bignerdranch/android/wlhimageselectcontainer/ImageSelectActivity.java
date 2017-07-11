@@ -83,10 +83,12 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
                 }
             }
         } else {
-            mSelectImages.remove(image);
-            image.setSelect(false);
-            if (mSelectImages.size() == MAX_IMAGE - 1) {
-                adapter.notifyData(false);
+            if (mSelectImages.contains(image)) {
+                mSelectImages.remove(image);
+                image.setSelect(false);
+                if (mSelectImages.size() == MAX_IMAGE - 1) {
+                    adapter.notifyData(false);
+                }
             }
         }
     }
