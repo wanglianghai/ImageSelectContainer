@@ -12,6 +12,13 @@ public class ImageBean implements Parcelable  {
     private String path;
     private boolean isSelect = false;
 
+    @Override
+    public String toString() {
+        return "ImageBean{" +
+                "path='" + path + '\'' +
+                ", isSelect=" + isSelect +
+                '}';
+    }
 
     public static final Creator<ImageBean> CREATOR = new Creator<ImageBean>() {
         @Override

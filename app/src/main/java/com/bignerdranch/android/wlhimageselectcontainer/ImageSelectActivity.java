@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
@@ -21,13 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageSelectActivity extends AppCompatActivity implements OnChangeListener {
+    private static final String TAG = "ImageSelectActivity";
     private RecyclerView mRecyclerView;
     private MyThread mThread;
+    private MyAdapter adapter;
 
     /**
      * 所有的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
+    private List<ImageBean> mSelectImages = new ArrayList<>();
+
+    private final int MAX_IMAGE = 5;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -52,7 +58,8 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
     }
 
     private void setData() {
-        mRecyclerView.setAdapter(new MyAdapter(this, mImages, this));
+        adapter = new MyAdapter(this, mImages, this);
+        mRecyclerView.setAdapter(adapter);
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(5));
     }
 
@@ -63,7 +70,25 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
 
     @Override
     public void onChangeListener(int position, boolean isCheck) {
-
+        ImageBean image = mImages.get(position);
+        //选中放图片
+        if (isCheck) {
+            //adapter的重新设置会触发监听事件
+            if (!mSelectImages.contains(image)) {
+                image.setSelect(true);
+                mSelectImages.add(image);
+                //必须放里面不然会一直调用
+                if (mSelectImages.size() == MAX_IMAGE) {
+                    adapter.notifyData(true);
+                }
+            }
+        } else {
+            mSelectImages.remove(image);
+            image.setSelect(false);
+            if (mSelectImages.size() == MAX_IMAGE - 1) {
+                adapter.notifyData(false);
+            }
+        }
     }
 
     //异步线程下载图片

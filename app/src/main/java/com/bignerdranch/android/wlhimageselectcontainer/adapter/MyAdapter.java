@@ -1,8 +1,10 @@
 package com.bignerdranch.android.wlhimageselectcontainer.adapter;
 
 import android.content.Context;
+import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,10 +27,12 @@ import java.util.List;
  */
 
 public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final String TAG = "MyAdapter";
     private Context mContext;
     private List<ImageBean> mImageBeen;
     private OnChangeListener mOnChangeListener;
 
+    private boolean notifyChange = false;
     private float mScreenWith;
     private int CAMERA_TYPE = 0;
     private int LAYOUT_TYPE = 1;
@@ -69,14 +73,44 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        //第一个子类类型不一样不能在外面赋值
+        //MyHolder itemView = (MyHolder) holder;
         if (getItemViewType(position) == LAYOUT_TYPE) {
-           Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(((MyHolder) holder).mImageView);
+            MyHolder itemView = (MyHolder) holder;
+        //    itemView.mCheckBox.setVisibility(View.VISIBLE);
+            Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(itemView.mImageView);
+            Log.i(TAG, "onBindViewHolder: " + mImageBeen.get(position).toString());
+            if (mImageBeen.get(position).isSelect()) {
+                itemView.mCheckBox.setChecked(true);
+                itemView.canSelect();
+            } else{
+                if (notifyChange) {
+                    itemView.cannotSelect();
+                } else {
+                    itemView.canSelect();
+                }
+                itemView.mCheckBox.setSelected(false);
+            }
         }
     }
 
     @Override
     public int getItemCount() {
         return mImageBeen.size();
+    }
+
+    //接受传入的值
+    //notifyDataSetChanged();耗时会崩app直接在主线程
+    public void  notifyData(boolean notifyChange) {
+        this.notifyChange = notifyChange;
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
+        Log.i(TAG, "notifyData: " + this.notifyChange);
     }
 
     private class MyHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener{
@@ -103,6 +137,16 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             mOnChangeListener.onChangeListener(getAdapterPosition(), isChecked);
+        }
+
+        public void canSelect() {
+            mImageView.setAlpha(1.0f);
+            mCheckBox.setClickable(true);
+        }
+
+        public void cannotSelect() {
+            mImageView.setAlpha(0.3f);
+            mCheckBox.setClickable(false);
         }
     }
 
