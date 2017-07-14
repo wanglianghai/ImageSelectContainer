@@ -79,12 +79,17 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             MyHolder itemView = (MyHolder) holder;
             Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(itemView.mImageView);
 
+            //设置check box的和点了之后的视图
+            itemView.mCheckBox.setVisibility(View.VISIBLE);
+            //被选中的设置视图是能选择的
             if (mImageBeen.get(position).isSelect()) {
                 itemView.mCheckBox.setChecked(true);
                 itemView.canSelect();
             } else{
+                //满了要改变改变
                 if (notifyChange) {
                     itemView.cannotSelect();
+                    itemView.mCheckBox.setVisibility(View.GONE);
                 } else {
                     itemView.canSelect();
                 }
@@ -110,10 +115,8 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             @Override
             public void run() {
                 notifyDataSetChanged();
-                Log.i(TAG, "run: runable" + Thread.currentThread().getName());
             }
         });
-        Log.i(TAG, "notifyData: " + this.notifyChange);
     }
 
     private class MyHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener{
@@ -144,13 +147,11 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         //check box 对应click able
         public void canSelect() {
-            mCheckBox.setVisibility(View.VISIBLE);
             mImageView.setAlpha(1.0f);
             mCheckBox.setClickable(true);
         }
 
         public void cannotSelect() {
-            mCheckBox.setVisibility(View.GONE);
             mImageView.setAlpha(0.3f);
             mCheckBox.setClickable(false);
         }

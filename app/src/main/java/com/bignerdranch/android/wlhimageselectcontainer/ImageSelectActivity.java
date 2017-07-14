@@ -66,14 +66,16 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
         mButtonConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //一个新的intent
-                Intent intent = new Intent();
-                //intent中放入数据
-                intent.putParcelableArrayListExtra("selectImages", mSelectImages);
-                //设置返回结果
-                setResult(Activity.RESULT_OK, intent);
-                //activity结束
-                finish();
+                if (mSelectImages.size() > 0) {
+                    //一个新的intent
+                    Intent intent = new Intent();
+                    //intent中放入数据
+                    intent.putParcelableArrayListExtra("selectImages", mSelectImages);
+                    //设置返回结果
+                    setResult(Activity.RESULT_OK, intent);
+                    //activity结束
+                    finish();
+                }
             }
         });
 

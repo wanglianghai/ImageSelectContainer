@@ -27,7 +27,8 @@ public class ImageBean implements Parcelable  {
             bean.path = source.readString();
             //1: true  0:false
             bean.isSelect = source.readByte() != 0;
-            return null;
+            //子activity返回的对象，如果空返回空，读取数据的对象结果
+            return bean;
         }
 
         @Override
