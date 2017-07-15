@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<paths>自己定义的，类的内部会自己配转换-->
+<paths>
+    <!--files-path app内的信息，name="image"公共Uri的文件名下个目录，path=".",file目录下的-->
+    <files-path name="image" path="."/>
+</paths>

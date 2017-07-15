@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.bignerdranch.android.wlhimageselectcontainer">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,10 +21,21 @@
         </activity>
         <activity android:name=".ImageSelectActivity">
         </activity>
+
+        <!--配置provider就是共享区域的Uri位置-->
+        <!--android:name引用的系统资源-->
+        <!--android:exported="false"不曝露，自己可见和授权的-->
+        <!--android:grantUriPermissions="true"uri授权-->
+        <provider
+            android:authorities="com.bignerdranch.android.wlhimageselectcontainer"
+            android:name="android.support.v4.content.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/files"/>
+        </provider>
     </application>
-
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.CAMERA" />
-
+    
 </manifest>

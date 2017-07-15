@@ -11,10 +11,18 @@
         android:layout_centerInParent="true">
 
     </com.bignerdranch.android.wlhimageselectcontainer.weight.NineImageView>
+
     <Button
         android:id="@+id/select_picture"
         android:text="select picture"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"/>
+
+    <ImageButton
+        android:id="@+id/button_camera"
+        android:layout_below="@id/select_picture"
+        android:src="@android:drawable/ic_menu_camera"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"/>
 
 </RelativeLayout>

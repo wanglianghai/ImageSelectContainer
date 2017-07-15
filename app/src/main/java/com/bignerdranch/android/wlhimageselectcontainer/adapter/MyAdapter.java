@@ -1,6 +1,7 @@
 package com.bignerdranch.android.wlhimageselectcontainer.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.bignerdranch.android.wlhimageselectcontainer.MainActivity;
 import com.bignerdranch.android.wlhimageselectcontainer.R;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
@@ -157,6 +159,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    //视图的监听在视图设置的holder里设置view holder（视图的持有人）
     private class CameraHolder extends RecyclerView.ViewHolder {
 
         public CameraHolder(View itemView) {
@@ -166,6 +169,13 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             params.width = (int) (mScreenWith / 3);
             params.height = (int) (mScreenWith / 3);
             imageView.setLayoutParams(params);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //设置监听调用select activity的照相方法
+                    MainActivity.sMainActivity.offCamera();
+                }
+            });
         }
     }
 }
