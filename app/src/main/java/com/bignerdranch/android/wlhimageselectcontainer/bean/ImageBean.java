@@ -12,6 +12,13 @@ public class ImageBean implements Parcelable  {
     private String path;
     private boolean isSelect = false;
 
+    public ImageBean(){}
+
+    public ImageBean(String path, boolean isSelect) {
+        this.path = path;
+        this.isSelect = isSelect;
+    }
+
     @Override
     public String toString() {
         return "ImageBean{" +
@@ -61,6 +68,7 @@ public class ImageBean implements Parcelable  {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(path);
+        //没有writeBoolean()方法
         dest.writeByte((byte) (isSelect ? 1 : 0));
     }
 }

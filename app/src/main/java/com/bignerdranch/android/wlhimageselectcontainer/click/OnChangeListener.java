@@ -6,4 +6,5 @@ package com.bignerdranch.android.wlhimageselectcontainer.click;
 
 public interface OnChangeListener {
     void onChangeListener(int position, boolean isCheck);
+    void showImageDialog(String msg);
 }

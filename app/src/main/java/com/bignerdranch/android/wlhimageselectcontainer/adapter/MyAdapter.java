@@ -16,10 +16,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.bignerdranch.android.wlhimageselectcontainer.BaseActivity;
+import com.bignerdranch.android.wlhimageselectcontainer.ImageDialogFragment;
+import com.bignerdranch.android.wlhimageselectcontainer.ImageSelectActivity;
 import com.bignerdranch.android.wlhimageselectcontainer.MainActivity;
 import com.bignerdranch.android.wlhimageselectcontainer.R;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
+import com.bignerdranch.android.wlhimageselectcontainer.weight.PictureUtils;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -79,8 +83,8 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         //MyHolder itemView = (MyHolder) holder;
         if (getItemViewType(position) == LAYOUT_TYPE) {
             MyHolder itemView = (MyHolder) holder;
-            Glide.with(mContext).load(mImageBeen.get(position).getPath()).into(itemView.mImageView);
 
+            itemView.bindView(mImageBeen.get(position).getPath());
             //设置check box的和点了之后的视图
             itemView.mCheckBox.setVisibility(View.VISIBLE);
             //被选中的设置视图是能选择的
@@ -125,6 +129,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private ImageView mImageView;
         private OnChangeListener mOnChangeListener;
         private CheckBox mCheckBox;
+        private String uri;
 
         private MyHolder(View itemView, OnChangeListener onChangeListener) {
             super(itemView);
@@ -140,6 +145,19 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             params.height = (int) (mScreenWith / 3);
             //3.用视图层的子组件设置参数
             mImageView.setLayoutParams(params);
+            //点击视图显示弹窗
+            mImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //启动dialog
+                    mOnChangeListener.showImageDialog(uri);
+                }
+            });
+        }
+
+        public void bindView(String uri) {
+            this.uri = uri;
+            Glide.with(mContext).load(uri).into(mImageView);
         }
 
         @Override
@@ -173,7 +191,8 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 @Override
                 public void onClick(View v) {
                     //设置监听调用select activity的照相方法
-                    MainActivity.sMainActivity.offCamera();
+                    ImageSelectActivity imageActivity = (ImageSelectActivity) mContext;
+                    imageActivity.offCamera(imageActivity);
                 }
             });
         }

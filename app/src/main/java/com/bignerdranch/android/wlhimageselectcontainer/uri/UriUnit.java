@@ -14,6 +14,11 @@ import java.util.UUID;
 public class UriUnit {
     private static final String AUTHORITIES = "com.bignerdranch.android.wlhimageselectcontainer";
     private static Uri photoFileUri;
+    private static File photoFile;
+
+    public static File getFileString() {
+        return photoFile;
+    }
 
     public static Uri getPhotoFileUri() {
         return photoFileUri;
@@ -24,7 +29,7 @@ public class UriUnit {
         File dirFile = context.getFilesDir();
         //拼接string类型的加。.toString(),类型一致
         String photoFileName = "IMG_" + UUID.randomUUID().toString() + ".jpg";
-        File photoFile = new File(dirFile, photoFileName);
+        photoFile = new File(dirFile, photoFileName);
         //从file provider中获取公共的uri
         photoFileUri = FileProvider.getUriForFile(context, AUTHORITIES, photoFile);
     }

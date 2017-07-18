@@ -25,7 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSelectActivity extends AppCompatActivity implements OnChangeListener {
+public class ImageSelectActivity extends BaseActivity implements OnChangeListener {
     private static final String TAG = "ImageSelectActivity";
 
     private Button mButtonConfirm;
@@ -35,13 +35,15 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
     private MyAdapter adapter;
 
     /**
-     * 所有的图片
+     * 所有相册要显示的的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
-    private ArrayList<ImageBean> mSelectImages = new ArrayList<>();
+    //监听回调时选择的图片
+
 
     private final int MAX_IMAGE = 9;
 
+    //收到异步下载完成信息
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(android.os.Message msg) {
@@ -73,9 +75,9 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
                     intent.putParcelableArrayListExtra("selectImages", mSelectImages);
                     //设置返回结果
                     setResult(Activity.RESULT_OK, intent);
-                    //activity结束
-                    finish();
                 }
+                //activity结束
+                finish();
             }
         });
 
@@ -93,6 +95,7 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
         mThread.start();
     }
 
+    //监听选择了的图片
     @Override
     public void onChangeListener(int position, boolean isCheck) {
         ImageBean image = mImages.get(position);
@@ -119,6 +122,13 @@ public class ImageSelectActivity extends AppCompatActivity implements OnChangeLi
                 }
             }
         }
+    }
+
+    //展示图片的dialog
+    @Override
+    public void showImageDialog(String msg) {
+        ImageDialogFragment f = ImageDialogFragment.newInstance(msg);
+        f.show(getFragmentManager(), "f");
     }
 
     //异步线程下载图片
