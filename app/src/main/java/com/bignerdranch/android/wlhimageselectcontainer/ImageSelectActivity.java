@@ -12,9 +12,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
@@ -29,6 +34,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     private static final String TAG = "ImageSelectActivity";
 
     private Button mButtonConfirm;
+    private TextView mTextViewDir;
 
     private RecyclerView mRecyclerView;
     private MyThread mThread;
@@ -38,7 +44,6 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
      * 所有相册要显示的的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
-    //监听回调时选择的图片
 
 
     private final int MAX_IMAGE = 9;
@@ -63,6 +68,14 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
+        mTextViewDir = (TextView) findViewById(R.id.text_image_dir);
+        mTextViewDir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPopupWindows();
+            }
+        });
+
         mButtonConfirm = (Button) findViewById(R.id.button_confirm);
         mButtonConfirm.setText("确定" + "0/" + MAX_IMAGE);
         mButtonConfirm.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +95,48 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         });
 
         getImageList();
+    }
+
+    private void showPopupWindows() {
+        View view = LayoutInflater.from(this).inflate(R.layout.image_dir_list, null);
+        setPopupWindows(view);
+    }
+
+    private void setPopupWindows(View view) {
+        int screenWidth;
+        int screenHeight;
+        //获取屏幕的宽和高来设置popWindow的宽和高
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenHeight = displayMetrics.heightPixels;
+        screenWidth = displayMetrics.widthPixels;
+        //设置popWindow的宽和高
+        PopupWindow dirPopupWindows = new PopupWindow(this);
+        dirPopupWindows.setWidth(screenWidth);
+        dirPopupWindows.setHeight((int) (screenHeight * 0.7));
+        //设置popWindow的视图
+        dirPopupWindows.setContentView(view);
+        //设置点击屏幕外的popWindow会dismiss（消失）
+        dirPopupWindows.setOutsideTouchable(true);
+        dirPopupWindows.setFocusable(true);
+        //设置消失后的行为
+        dirPopupWindows.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                setWindowsAlpha(1.0f);
+            }
+        });
+        dirPopupWindows.showAsDropDown(mTextViewDir);
+
+        setWindowsAlpha(0.5f);
+    }
+
+    //设置窗口的透明度属性值
+    private void setWindowsAlpha(float f) {
+        WindowManager.LayoutParams lp;
+        lp = getWindow().getAttributes();
+        lp.alpha = f;
+        getWindow().setAttributes(lp);
     }
 
     private void setData() {

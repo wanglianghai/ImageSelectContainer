@@ -13,6 +13,32 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@id/action_bar"/>
+    
+    <LinearLayout
+        android:id="@+id/bottom_linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:alpha="0.5"
+        android:background="#000000">
+        
+        <TextView
+            android:id="@+id/text_image_dir"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:padding="16dp"
+            android:text="全部图片"/>
+        
+        <TextView
+            android:id="@+id/text_image_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="32张"
+            android:textColor="#fff"
+            android:padding="16dp"/>
+    </LinearLayout>
 </RelativeLayout>
