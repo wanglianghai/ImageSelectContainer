@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.bignerdranch.android.wlhimageselectcontainer.R;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageDirBean;
+import com.bignerdranch.android.wlhimageselectcontainer.click.OnDirSelectListener;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -21,11 +22,13 @@ import java.util.List;
 
 public class ImageDirSelectAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<ImageDirBean> mDirBeen;
+    private OnDirSelectListener mDirListener;
     private Context mContext;
 
-    public ImageDirSelectAdapter(List<ImageDirBean> dirBeen, Context context) {
+    public ImageDirSelectAdapter(List<ImageDirBean> dirBeen, Context context, OnDirSelectListener dirListener) {
         mDirBeen = dirBeen;
         mContext = context;
+        mDirListener = dirListener;
     }
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -55,6 +58,12 @@ public class ImageDirSelectAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             mImageView = (ImageView) itemView.findViewById(R.id.image_view_item);
             mTextViewTitle = (TextView) itemView.findViewById(R.id.picture_dir);
             mTextViewNum = (TextView) itemView.findViewById(R.id.text_view_item_num);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDirListener.selectDirPath(mDirBeen.get(getAdapterPosition()));
+                }
+            });
         }
 
         public void bind(ImageDirBean dirBean) {

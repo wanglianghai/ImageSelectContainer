@@ -29,18 +29,21 @@ import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecorat
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageDirBean;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
+import com.bignerdranch.android.wlhimageselectcontainer.click.OnDirSelectListener;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class ImageSelectActivity extends BaseActivity implements OnChangeListener {
+public class ImageSelectActivity extends BaseActivity implements OnChangeListener, OnDirSelectListener {
     private static final String TAG = "ImageSelectActivity";
 
     private Button mButtonConfirm;
     private TextView mTextViewDir;
+    private PopupWindow dirPopupWindows;
 
     private RecyclerView mRecyclerView;
     private MyThread mThread;
@@ -116,7 +119,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
 
     private void setPopupWindowsView(View view) {
         RecyclerView r = (RecyclerView) view.findViewById(R.id.recycler_view_dir_list);
-        dirAdapter = new ImageDirSelectAdapter(mDirBeen, this);
+        dirAdapter = new ImageDirSelectAdapter(mDirBeen, this, this);
         r.setAdapter(dirAdapter);
         r.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -131,7 +134,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         screenHeight = displayMetrics.heightPixels;
         screenWidth = displayMetrics.widthPixels;
         //设置popWindow的宽和高
-        PopupWindow dirPopupWindows = new PopupWindow(this);
+        dirPopupWindows = new PopupWindow(this);
         dirPopupWindows.setWidth(screenWidth);
         dirPopupWindows.setHeight((int) (screenHeight * 0.7));
         //设置popWindow的视图
@@ -175,10 +178,13 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     @Override
     public void onChangeListener(int position, boolean isCheck) {
         ImageBean image = mImages.get(position);
+        Log.i(TAG, "onChangeListener: " + image);
         //选中放图片
         if (isCheck) {
             //adapter的重新设置会触发监听事件
-            if (!mSelectImages.contains(image)) {
+            //if (!mSelectImages.contains(image)) {序列化后里面的东西不一样
+            if (!contains(mSelectImages, image)){
+                Log.i(TAG, "onChangeListener: in " + image);
                 image.setSelect(true);
                 mSelectImages.add(image);
                 mButtonConfirm.setText("确定" + mSelectImages.size() + "/" + MAX_IMAGE);
@@ -188,7 +194,8 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
                 }
             }
         } else {
-            if (mSelectImages.contains(image)) {
+            //if (!mSelectImages.contains(image)) {序列化后里面的东西不一样
+            if (!contains(mSelectImages, image)) {
                 mSelectImages.remove(image);
                 mButtonConfirm.setText("确定" + mSelectImages.size() + "/" + MAX_IMAGE);
                 image.setSelect(false);
@@ -198,6 +205,16 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
                 }
             }
         }
+    }
+
+    private boolean contains(List<ImageBean> imageBeen, ImageBean bean) {
+        for (ImageBean i: imageBeen) {
+            if (i.getPath().equals(bean.getPath())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //展示图片的dialog
@@ -234,11 +251,13 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         if (mDirHashSet.contains(parentAbsoluteFile)) {
             return;
         }
+        ImageDirBean dirBean = new ImageDirBean();
+        dirBean.setParentFile(parentAbsoluteFile);
         mDirHashSet.add(parentAbsoluteFile);
         //分隔得到图片文件夹的名字
         String[] pathSplit = parentAbsoluteFile.split("/");
         parentAbsoluteFile = pathSplit[pathSplit.length - 1];
-        ImageDirBean dirBean = new ImageDirBean();
+
         dirBean.setFirstImagePath(path);
         dirBean.setFileName(parentAbsoluteFile);
         int pictureSize = parentAbstractFile.list(new FilenameFilter() {
@@ -252,6 +271,38 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         }).length;
         dirBean.setImageSize(pictureSize);
         mDirBeen.add(dirBean);
+    }
+
+    //监听选择目录
+    @Override
+    public void selectDirPath(ImageDirBean dirBean) {
+        mImages.clear();
+        mImages.add(null);
+        String parentPath = dirBean.getParentFile();
+        File fileParent = new File(parentPath);
+        List<String> imagePath = Arrays.asList(fileParent.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".jpeg")) {
+                    return true;
+                }
+                return false;
+            }
+        }));
+        for (String pathName: imagePath) {
+            ImageBean image = new ImageBean();
+            image.setPath(parentPath + "/" + pathName);
+            image.setSelect(false);
+            for (ImageBean selectBean : mSelectImages) {
+                if (image.getPath().equals(selectBean.getPath())) {
+                    image.setSelect(true);
+                }
+            }
+            mImages.add(image);
+        }
+        adapter.notifyDataSetChanged();
+        mTextViewDir.setText(dirBean.getFileName());
+        dirPopupWindows.dismiss();
     }
 
     //异步线程下载图片

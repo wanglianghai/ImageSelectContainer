@@ -8,6 +8,15 @@ public class ImageDirBean {
     private String fileName;
     private int imageSize;
     private String firstImagePath;
+    private String parentFile;
+
+    public String getParentFile() {
+        return parentFile;
+    }
+
+    public void setParentFile(String parentFile) {
+        this.parentFile = parentFile;
+    }
 
     public String getFileName() {
         return fileName;
