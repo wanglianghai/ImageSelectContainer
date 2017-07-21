@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:gravity="center"
+              android:layout_height="80dp">
+
+    <ImageView
+        android:id="@+id/image_view_item"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:padding="4dp"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/ic_launcher"/>
+
+    <TextView
+        android:id="@+id/picture_dir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="图片目录"
+        android:padding="8dp"
+        android:textSize="17sp"/>
+
+    <TextView
+        android:id="@+id/text_view_item_num"
+        android:layout_below="@id/picture_dir"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"/>
+
+    <TextView
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:alpha="0.1"
+        android:background="#000"/>
+</RelativeLayout>

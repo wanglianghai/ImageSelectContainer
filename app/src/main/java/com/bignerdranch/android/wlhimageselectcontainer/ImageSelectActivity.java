@@ -11,6 +11,8 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -21,13 +23,17 @@ import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.bignerdranch.android.wlhimageselectcontainer.adapter.ImageDirSelectAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
+import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageDirBean;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ImageSelectActivity extends BaseActivity implements OnChangeListener {
@@ -39,11 +45,15 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     private RecyclerView mRecyclerView;
     private MyThread mThread;
     private MyAdapter adapter;
+    private ImageDirSelectAdapter dirAdapter;
 
     /**
      * 所有相册要显示的的图片
      */
     private List<ImageBean> mImages = new ArrayList<>();
+    private List<ImageDirBean> mDirBeen = new ArrayList<>();
+    //防止重复进入，hash效率很高
+    private HashSet<String> mDirHashSet = new HashSet<>();
 
 
     private final int MAX_IMAGE = 9;
@@ -98,10 +108,20 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     }
 
     private void showPopupWindows() {
+        //设置显示的视图
         View view = LayoutInflater.from(this).inflate(R.layout.image_dir_list, null);
+        setPopupWindowsView(view);
         setPopupWindows(view);
     }
 
+    private void setPopupWindowsView(View view) {
+        RecyclerView r = (RecyclerView) view.findViewById(R.id.recycler_view_dir_list);
+        dirAdapter = new ImageDirSelectAdapter(mDirBeen, this);
+        r.setAdapter(dirAdapter);
+        r.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    //设置弹出的popup windows
     private void setPopupWindows(View view) {
         int screenWidth;
         int screenHeight;
@@ -126,6 +146,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
                 setWindowsAlpha(1.0f);
             }
         });
+        dirPopupWindows.setAnimationStyle(R.style.contextMenuAnim);
         dirPopupWindows.showAsDropDown(mTextViewDir);
 
         setWindowsAlpha(0.5f);
@@ -186,23 +207,60 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         f.show(getFragmentManager(), "f");
     }
 
+    private Cursor getCursor() {
+        //获取内存卡路径
+        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        //通过内容解析器解析出png和jpeg格式的图片
+        ContentResolver mContentResolver = ImageSelectActivity.this
+                .getContentResolver();
+        Cursor mCursor = mContentResolver.query(mImageUri, null,
+                MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        +MediaStore.Images.Media.MIME_TYPE + "=?",
+                new String[]{"image/png", "image/jpeg"},
+                MediaStore.Images.Media.DATE_MODIFIED);
+
+        return mCursor;
+    }
+
+    private void inImages(String path) {
+        ImageBean imageBean = new ImageBean();
+        imageBean.setPath(path);
+        mImages.add(imageBean);
+    }
+
+    private void inDirPath(String path) {
+        File parentAbstractFile = new File(path).getParentFile();
+        String parentAbsoluteFile = parentAbstractFile.getAbsolutePath();
+        if (mDirHashSet.contains(parentAbsoluteFile)) {
+            return;
+        }
+        mDirHashSet.add(parentAbsoluteFile);
+        //分隔得到图片文件夹的名字
+        String[] pathSplit = parentAbsoluteFile.split("/");
+        parentAbsoluteFile = pathSplit[pathSplit.length - 1];
+        ImageDirBean dirBean = new ImageDirBean();
+        dirBean.setFirstImagePath(path);
+        dirBean.setFileName(parentAbsoluteFile);
+        int pictureSize = parentAbstractFile.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".jpeg")) {
+                    return true;
+                }
+                return false;
+            }
+        }).length;
+        dirBean.setImageSize(pictureSize);
+        mDirBeen.add(dirBean);
+    }
+
     //异步线程下载图片
     private class MyThread extends Thread{
         @Override
         public void run() {
             super.run();
-            //第一张图片
-            String fistImage = null;
-            //获取内存卡路径
-            Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            //通过内容解析器解析出png和jpeg格式的图片
-            ContentResolver mContentResolver = ImageSelectActivity.this
-                    .getContentResolver();
-            Cursor mCursor = mContentResolver.query(mImageUri, null,
-                    MediaStore.Images.Media.MIME_TYPE + "=? or "
-                            +MediaStore.Images.Media.MIME_TYPE + "=?",
-                    new String[]{"image/png", "image/jpeg"},
-                    MediaStore.Images.Media.DATE_MODIFIED);
+
+           Cursor mCursor = getCursor();
             //判断是否存在图片
             if (mCursor.getCount() > 0) {
                 //第一个放自己的图片
@@ -210,21 +268,12 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
                 while (mCursor.moveToNext()) {
                     // 获取该图片的文件名
                     // 获取图片的路径
-                    String path = mCursor.getString(mCursor
-                            .getColumnIndex(MediaStore.Images.Media.DATA));
-                    File parentFile = new File(path).getParentFile();
-                    if (parentFile == null) {
-                        continue;
-                    }
-                    //获取到文件地址
-                    String dirPath = parentFile.getAbsolutePath();
-
-                    ImageBean imageBean = new ImageBean();
-                    imageBean.setPath(path);
-                    mImages.add(imageBean);
-
+                    String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                    inImages(path);
+                    inDirPath(path);
                 }
             }
+            mCursor.close();
 
             mHandler.sendEmptyMessage(0x110);
         }
