@@ -6,13 +6,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -24,12 +21,14 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.ImageDirSelectAdapter;
+import com.bignerdranch.android.wlhimageselectcontainer.adapter.ImageDirSelectAdapterDelete;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageDirBean;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnDirSelectListener;
+import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -38,7 +37,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-public class ImageSelectActivity extends BaseActivity implements OnChangeListener, OnDirSelectListener {
+public class ImageSelectActivity extends BaseActivity implements OnChangeListener{
     private static final String TAG = "ImageSelectActivity";
 
     private Button mButtonConfirm;
@@ -119,9 +118,16 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
 
     private void setPopupWindowsView(View view) {
         RecyclerView r = (RecyclerView) view.findViewById(R.id.recycler_view_dir_list);
-        dirAdapter = new ImageDirSelectAdapter(mDirBeen, this, this);
+        dirAdapter = new ImageDirSelectAdapter(mDirBeen);
         r.setAdapter(dirAdapter);
         r.setLayoutManager(new LinearLayoutManager(this));
+        dirAdapter.openLoadAnimation(BaseQuickAdapter.SLIDEIN_LEFT);
+        dirAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                selectDirPath(mDirBeen.get(position));
+            }
+        });
     }
 
     //设置弹出的popup windows
@@ -273,13 +279,13 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         mDirBeen.add(dirBean);
     }
 
-    //监听选择目录
-    @Override
+    //监听选择
     public void selectDirPath(ImageDirBean dirBean) {
         mImages.clear();
         mImages.add(null);
         String parentPath = dirBean.getParentFile();
         File fileParent = new File(parentPath);
+        //解析出每一个的子文件名字
         List<String> imagePath = Arrays.asList(fileParent.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
