@@ -12,5 +12,10 @@
         <item name="android:windowEnterAnimation">@anim/context_menu_enter</item>
         <item name="android:windowExitAnimation">@anim/context_menu_exit</item>
     </style>
+    
+    <style name="photoCheckBox" parent="@android:style/Widget.CompoundButton.CheckBox">
+        <item name="android:background">@drawable/select_image_pressed</item>
+        <item name="android:button">@drawable/select_image_unpressed</item>
+    </style>
 
 </resources>

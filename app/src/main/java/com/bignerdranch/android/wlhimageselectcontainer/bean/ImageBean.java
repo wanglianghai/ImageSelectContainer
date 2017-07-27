@@ -7,7 +7,7 @@ import android.os.Parcelable;
  * Created by Administrator on 2017/7/8/008.
  */
 
-//进程间通信数据传递的最好方式,共享内存空间
+//activity间通信数据传递的最好方式,共享内存空间
 public class ImageBean implements Parcelable  {
     private String path;
     private boolean isSelect = false;

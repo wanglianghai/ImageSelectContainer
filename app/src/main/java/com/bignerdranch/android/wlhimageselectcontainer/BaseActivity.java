@@ -33,17 +33,18 @@ public class BaseActivity extends AppCompatActivity {
         mCaptureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
     }
 
-    public void offCamera(Activity activityCamera) {
-        if (activityCamera instanceof ImageSelectActivity) {
-            activityCamera.finish();
-        }
+    //1.file provider 的 uri
+    //2.媒体存中抓取图片的intent
+    public void offCamera() {
         UriUnit.setPhotoFileUri(this);
         photoUri = UriUnit.getPhotoFileUri();
         //intent中放键值对给启动的activity寻找
         mCaptureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         //询问这个intent可以启动的activity
-        List<ResolveInfo> captureActivities = BaseActivity.this.getPackageManager()
+        List<ResolveInfo> captureActivities = getPackageManager()
                 .queryIntentActivities(mCaptureIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
+        //自己的应用授权一个uri给其他的activity
         for (ResolveInfo activity:captureActivities) {
             BaseActivity.this.grantUriPermission(activity.activityInfo.packageName,
                     photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -60,7 +61,7 @@ public class BaseActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_PHOTO:
                 //注销这个uri权限
-                this.revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+          //      this.revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 ImageBean imageBean = new ImageBean();
                 imageBean.setPath(UriUnit.getFileString().toString());
                 mSelectImages.add(imageBean);

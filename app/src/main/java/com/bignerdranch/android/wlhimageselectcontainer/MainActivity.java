@@ -43,9 +43,9 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //发送需要得到的权限
         MPermissionUtils.requestPermissionsResult(MainActivity.this, 1,
-                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE});
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE});
 
         mNineImageView = (NineImageView) findViewById(R.id.nine_view_group);
 
@@ -54,7 +54,7 @@ public class MainActivity extends BaseActivity {
         mCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                offCamera(MainActivity.this);
+                offCamera();
             }
         });
 

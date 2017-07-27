@@ -28,8 +28,10 @@ public class MPermissionUtils {
      */
     @TargetApi(Build.VERSION_CODES.M)
     private static void requestPermission(Activity activity, int requestCode, String[] permissions) {
+        //被拒绝的权限
         List<String> deniedPermissions = getDeniedPermissions(activity, permissions);
         if (deniedPermissions.size() > 0) {
+            //请求被拒绝的权限
             activity.requestPermissions(deniedPermissions
                             .toArray(new String[deniedPermissions.size()]), requestCode);
         }

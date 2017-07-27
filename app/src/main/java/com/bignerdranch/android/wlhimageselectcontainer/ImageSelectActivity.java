@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -21,13 +22,11 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.ImageDirSelectAdapter;
-import com.bignerdranch.android.wlhimageselectcontainer.adapter.ImageDirSelectAdapterDelete;
-import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapter;
+import com.bignerdranch.android.wlhimageselectcontainer.adapter.MyAdapterDelete;
 import com.bignerdranch.android.wlhimageselectcontainer.adapter.SpaceItemDecoration;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageBean;
 import com.bignerdranch.android.wlhimageselectcontainer.bean.ImageDirBean;
 import com.bignerdranch.android.wlhimageselectcontainer.click.OnChangeListener;
-import com.bignerdranch.android.wlhimageselectcontainer.click.OnDirSelectListener;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.io.File;
@@ -46,7 +45,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
 
     private RecyclerView mRecyclerView;
     private MyThread mThread;
-    private MyAdapter adapter;
+    private MyAdapterDelete adapter;
     private ImageDirSelectAdapter dirAdapter;
 
     /**
@@ -63,7 +62,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     //收到异步下载完成信息
     private Handler mHandler = new Handler() {
         @Override
-        public void handleMessage(android.os.Message msg) {
+        public void handleMessage(Message msg) {
             //绑定数据
             setData();
             if (mThread != null && !mThread.isInterrupted()) {
@@ -170,7 +169,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     }
 
     private void setData() {
-        adapter = new MyAdapter(this, mImages, this);
+        adapter = new MyAdapterDelete(this, mImages, this);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(5));
     }
@@ -231,18 +230,15 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     }
 
     private Cursor getCursor() {
-        //获取内存卡路径
+        //获取内存卡路径Uri
         Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        //通过内容解析器解析出png和jpeg格式的图片
-        ContentResolver mContentResolver = ImageSelectActivity.this
-                .getContentResolver();
-        Cursor mCursor = mContentResolver.query(mImageUri, null,
+        //通过内容解析器解析出png和jpeg格式的图片第3个参数是where第四个死where后的值
+        ContentResolver mContentResolver = getContentResolver();
+        return mContentResolver.query(mImageUri, null,
                 MediaStore.Images.Media.MIME_TYPE + "=? or "
                         +MediaStore.Images.Media.MIME_TYPE + "=?",
                 new String[]{"image/png", "image/jpeg"},
-                MediaStore.Images.Media.DATE_MODIFIED);
-
-        return mCursor;
+                MediaStore.Images.Media.DATE_ADDED);
     }
 
     private void inImages(String path) {
@@ -311,17 +307,19 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         dirPopupWindows.dismiss();
     }
 
-    //异步线程下载图片
+    //异步线程寻找图片位置
     private class MyThread extends Thread{
         @Override
         public void run() {
             super.run();
 
-           Cursor mCursor = getCursor();
+            //  用cursor读app外部的图片地址
+            Cursor mCursor = getCursor();
             //判断是否存在图片
             if (mCursor.getCount() > 0) {
                 //第一个放自己的图片
                 mImages.add(new ImageBean());
+                //移动cursor
                 while (mCursor.moveToNext()) {
                     // 获取该图片的文件名
                     // 获取图片的路径
@@ -332,7 +330,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
             }
             mCursor.close();
 
-            mHandler.sendEmptyMessage(0x110);
+            mHandler.sendEmptyMessage(0x111);
         }
     }
 }
