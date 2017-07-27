@@ -2,12 +2,14 @@ package com.bignerdranch.android.wlhimageselectcontainer;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,6 +38,7 @@ public class MainActivity extends BaseActivity {
     private NineImageView mNineImageView;
     private Button mSelectButton;
     private ImageButton mCameraButton;
+    private Button mButtonDialog;
 
 
     @Override
@@ -68,6 +71,14 @@ public class MainActivity extends BaseActivity {
                 //startActivity(intent);
                 //intent放回的结果
                 startActivityForResult(intent, REQUEST_SELECT);
+            }
+        });
+
+        mButtonDialog = (Button) findViewById(R.id.dialog_button);
+        mButtonDialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDialog();
             }
         });
 
@@ -104,5 +115,13 @@ public class MainActivity extends BaseActivity {
                     break;
             }
         }
+    }
+
+    public void showDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("DIALOG");
+        builder.setPositiveButton("confirm", null);
+        builder.setNegativeButton("cancel", null);
+        builder.show();
     }
 }

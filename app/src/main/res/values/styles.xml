@@ -5,7 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:colorAccent">@color/colorPrimaryDark</item>
     </style>
 
     <style name="contextMenuAnim" parent="@android:style/Animation.Activity">
@@ -14,8 +14,7 @@
     </style>
     
     <style name="photoCheckBox" parent="@android:style/Widget.CompoundButton.CheckBox">
-        <item name="android:background">@drawable/select_image_pressed</item>
-        <item name="android:button">@drawable/select_image_unpressed</item>
+        <item name="android:button">@drawable/check_box_select</item>
     </style>
 
 </resources>
