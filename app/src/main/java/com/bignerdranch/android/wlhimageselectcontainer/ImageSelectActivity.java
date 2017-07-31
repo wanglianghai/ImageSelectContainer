@@ -36,6 +36,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+
 public class ImageSelectActivity extends BaseActivity implements OnChangeListener{
     private static final String TAG = "ImageSelectActivity";
 
@@ -44,7 +54,7 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
     private PopupWindow dirPopupWindows;
 
     private RecyclerView mRecyclerView;
-    private MyThread mThread;
+
     private MyAdapterDelete adapter;
     private ImageDirSelectAdapter dirAdapter;
 
@@ -58,18 +68,6 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
 
 
     private final int MAX_IMAGE = 9;
-
-    //收到异步下载完成信息
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            //绑定数据
-            setData();
-            if (mThread != null && !mThread.isInterrupted()) {
-                mThread.interrupt();
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,11 +172,6 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(5));
     }
 
-    private void getImageList() {
-        mThread = new MyThread();
-        mThread.start();
-    }
-
     //监听选择了的图片
     @Override
     public void onChangeListener(int position, boolean isCheck) {
@@ -275,6 +268,34 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         mDirBeen.add(dirBean);
     }
 
+    private void inDirPath(List<ImageDirBean> dirs, String path) {
+        File parentAbstractFile = new File(path).getParentFile();
+        String parentAbsoluteFile = parentAbstractFile.getAbsolutePath();
+        if (mDirHashSet.contains(parentAbsoluteFile)) {
+            return;
+        }
+        ImageDirBean dirBean = new ImageDirBean();
+        dirBean.setParentFile(parentAbsoluteFile);
+        mDirHashSet.add(parentAbsoluteFile);
+        //分隔得到图片文件夹的名字
+        String[] pathSplit = parentAbsoluteFile.split("/");
+        parentAbsoluteFile = pathSplit[pathSplit.length - 1];
+
+        dirBean.setFirstImagePath(path);
+        dirBean.setFileName(parentAbsoluteFile);
+        int pictureSize = parentAbstractFile.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.endsWith(".jpg") || name.endsWith(".png") || name.endsWith(".jpeg")) {
+                    return true;
+                }
+                return false;
+            }
+        }).length;
+        dirBean.setImageSize(pictureSize);
+        mDirBeen.add(dirBean);
+    }
+
     //监听选择
     public void selectDirPath(ImageDirBean dirBean) {
         mImages.clear();
@@ -307,30 +328,51 @@ public class ImageSelectActivity extends BaseActivity implements OnChangeListene
         dirPopupWindows.dismiss();
     }
 
-    //异步线程寻找图片位置
-    private class MyThread extends Thread{
-        @Override
-        public void run() {
-            super.run();
-
-            //  用cursor读app外部的图片地址
-            Cursor mCursor = getCursor();
-            //判断是否存在图片
-            if (mCursor.getCount() > 0) {
-                //第一个放自己的图片
-                mImages.add(new ImageBean());
-                //移动cursor
-                while (mCursor.moveToNext()) {
-                    // 获取该图片的文件名
-                    // 获取图片的路径
-                    String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-                    inImages(path);
-                    inDirPath(path);
+    private void getImageList() {
+        Observable.create(new ObservableOnSubscribe<List<ImageBean>>() {
+            @Override
+            public void subscribe(ObservableEmitter<List<ImageBean>> e) throws Exception {
+                //  用cursor读app外部的图片地址
+                Cursor mCursor = getCursor();
+                //判断是否存在图片
+                if (mCursor.getCount() > 0) {
+                    //第一个放自己的图片
+                    inImages(null);
+                    //移动cursor
+                    while (mCursor.moveToNext()) {
+                        // 获取该图片的文件名
+                        // 获取图片的路径
+                        String path = mCursor.getString(mCursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                        inImages(path);
+                        inDirPath(path);
+                    }
                 }
+                mCursor.close();
+                e.onComplete();
             }
-            mCursor.close();
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<ImageBean>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
 
-            mHandler.sendEmptyMessage(0x111);
-        }
+                    }
+
+                    @Override
+                    public void onNext(List<ImageBean> value) {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        setData();
+                    }
+                });
+
     }
 }
